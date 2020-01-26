@@ -394,6 +394,7 @@ If ($Parallel){
                     If ($VMObjectFile.resources.properties.storageProfile.imageReference) {
                         $VMObjectFile.resources.properties.storageProfile.imageReference.id = $null
                         $VMObjectFile.resources.properties.storageProfile.imageReference = $null
+                        $VMObjectFile.resources.properties.storageProfile.psObject.Properties.Remove("ImageReference")
                     }
                     If ($VMObjectFile.resources.properties.osProfile) {
                         $VMObjectFile.resources.properties.osProfile = $null
