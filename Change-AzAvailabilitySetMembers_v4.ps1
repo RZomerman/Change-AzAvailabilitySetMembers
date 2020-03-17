@@ -56,6 +56,8 @@ Param(
    [Parameter(Mandatory=$False)]
    [int]$Parallel,
    [Parameter(Mandatory=$False)]
+   [int]$BatchSkip,
+   [Parameter(Mandatory=$False)]
    [int]$FaultDomain=99,
    [Parameter(Mandatory=$False)]
    [int]$UpdateDomain=99,
@@ -246,11 +248,21 @@ If ($ValidateSourceAs){
 
         #If no update/fault domains specified, but only Parallel jobs, no need to get all the VM's in the set $Allmembers is Object.ID
         #so early filter on parallel
-        If ($Parallel -and ($FaultOrUpdateDomains -eq $False) -and (!($TargetVM))) {
+        If ($Parallel -and ($FaultOrUpdateDomains -eq $False) -and (!($TargetVM)) -and ($TargetAvailabilitySet)) {
             $Description = "Filtering on Parallel limit" 
             WriteLog -Description $Description -LogFile $LogFile -Color "Green"
             $AllMembers=$AllMembers | select -first $Parallel
         }
+
+        If ($Parallel -and ($FaultOrUpdateDomains -eq $False) -and (!($TargetVM)) -and (!($TargetAvailabilitySet))-and ($BatchSkip)) {
+            $Description = "Filtering on Parallel limit - but VM's aren't moved to new AV set..." 
+            WriteLog -Description $Description -LogFile $LogFile -Color "Green"
+            $AllMembers=$AllMembers | select -Skip $BatchSkip
+            $AllMembers=$AllMembers | select -first $Parallel
+            $void=$allMembers.count
+
+        }
+
 
         #If single VM is given, need to filter on that VM
         If ($TargetVM){
@@ -309,7 +321,6 @@ If ($ValidateSourceAs){
         #FilterForMaxNumberInParallel and in Fault/UpdateDomains
         If ($Parallel -and ($FaultOrUpdateDomains -eq $True) -and (!($TargetVM))) {
             $AllMembers=$AllMembers | select -first $Parallel
-
         }
 
         Write-host ""
